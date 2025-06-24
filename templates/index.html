@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sustainability Analytics Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="bg-gradient-success text-white rounded-3 p-5 text-center">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-leaf me-3"></i>Sustainability Analytics Platform
+                </h1>
+                <p class="lead mb-4">
+                    Harness the power of AI to make sustainable decisions. Analyze packaging, carbon footprint, products, and ESG scores.
+                </p>
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-6 col-md-3">
+                                <div class="bg-white bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-box fs-2 mb-2"></i>
+                                    <div class="small">Packaging</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="bg-white bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-leaf fs-2 mb-2"></i>
+                                    <div class="small">Carbon Footprint</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="bg-white bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-shopping-cart fs-2 mb-2"></i>
+                                    <div class="small">Products</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="bg-white bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-chart-bar fs-2 mb-2"></i>
+                                    <div class="small">ESG Scores</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ML Models Section -->
+    <div class="row g-4">
+        <!-- Packaging Suggestions -->
+        <div class="col-lg-6">
+            <div class="card h-100" id="packaging-section">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-box me-2"></i>Packaging Suggestions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Get AI-powered packaging recommendations based on product characteristics.</p>
+                    
+                    <form id="packagingForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="productWeight" class="form-label">Product Weight (kg)</label>
+                                <input type="number" class="form-control" id="productWeight" step="0.1" min="0.1" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="fragility" class="form-label">Fragility</label>
+                                <select class="form-select" id="fragility" required>
+                                    <option value="">Select fragility</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="materialType" class="form-label">Material Type</label>
+                                <select class="form-select" id="materialType" required>
+                                    <option value="">Select material</option>
+                                    <option value="plastic">Plastic</option>
+                                    <option value="glass">Glass</option>
+                                    <option value="metal">Metal</option>
+                                    <option value="organic">Organic</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="transportMode" class="form-label">Transport Mode</label>
+                                <select class="form-select" id="transportMode" required>
+                                    <option value="">Select transport</option>
+                                    <option value="ground">Ground</option>
+                                    <option value="air">Air</option>
+                                    <option value="sea">Sea</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary mt-3">
+                            <i class="fas fa-magic me-2"></i>Get Recommendation
+                        </button>
+                    </form>
+                    
+                    <div id="packagingResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carbon Footprint -->
+        <div class="col-lg-6">
+            <div class="card h-100" id="carbon-section">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-leaf me-2"></i>Carbon Footprint Prediction
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Calculate your annual carbon footprint based on lifestyle factors.</p>
+                    
+                    <form id="carbonForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="age" class="form-label">Age</label>
+                                <input type="number" class="form-control" id="age" min="18" max="100" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="income" class="form-label">Annual Income ($)</label>
+                                <input type="number" class="form-control" id="income" min="0" step="1000" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="location" class="form-label">Location Type</label>
+                                <select class="form-select" id="location" required>
+                                    <option value="">Select location</option>
+                                    <option value="urban">Urban</option>
+                                    <option value="suburban">Suburban</option>
+                                    <option value="rural">Rural</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="transportPreference" class="form-label">Transport Preference</label>
+                                <select class="form-select" id="transportPreference" required>
+                                    <option value="">Select transport</option>
+                                    <option value="car">Car</option>
+                                    <option value="public_transport">Public Transport</option>
+                                    <option value="bike">Bike</option>
+                                    <option value="walk">Walk</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success mt-3">
+                            <i class="fas fa-calculator me-2"></i>Calculate Footprint
+                        </button>
+                    </form>
+                    
+                    <div id="carbonResult" class="mt-3"></div>
+                    <canvas id="carbonChart" class="mt-3" style="display: none;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Recommendations -->
+        <div class="col-lg-6">
+            <div class="card h-100" id="product-section">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>Product Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Discover sustainable products tailored to your preferences and budget.</p>
+                    
+                    <form id="productForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" required>
+                                    <option value="">Select category</option>
+                                    <option value="electronics">Electronics</option>
+                                    <option value="clothing">Clothing</option>
+                                    <option value="food">Food</option>
+                                    <option value="home">Home</option>
+                                    <option value="beauty">Beauty</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="budget" class="form-label">Budget ($)</label>
+                                <input type="number" class="form-control" id="budget" min="1" step="10" required>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="ecoPriority" checked>
+                                    <label class="form-check-label" for="ecoPriority">
+                                        Prioritize eco-friendly products
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-info mt-3">
+                            <i class="fas fa-search me-2"></i>Find Products
+                        </button>
+                    </form>
+                    
+                    <div id="productResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ESG Score Analysis -->
+        <div class="col-lg-6">
+            <div class="card h-100" id="esg-section">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>ESG Score Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Analyze Environmental, Social, and Governance performance metrics.</p>
+                    
+                    <form id="esgForm">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="carbonEmissions" class="form-label">Carbon Emissions (tons)</label>
+                                <input type="number" class="form-control" id="carbonEmissions" min="0" step="100" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="renewableEnergy" class="form-label">Renewable Energy (%)</label>
+                                <input type="number" class="form-control" id="renewableEnergy" min="0" max="100" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="wasteManagement" class="form-label">Waste Management (1-10)</label>
+                                <input type="number" class="form-control" id="wasteManagement" min="1" max="10" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="employeeSatisfaction" class="form-label">Employee Satisfaction (1-10)</label>
+                                <input type="number" class="form-control" id="employeeSatisfaction" min="1" max="10" value="7">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="diversityScore" class="form-label">Diversity Score (1-10)</label>
+                                <input type="number" class="form-control" id="diversityScore" min="1" max="10" value="6">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="boardIndependence" class="form-label">Board Independence (%)</label>
+                                <input type="number" class="form-control" id="boardIndependence" min="0" max="100" value="60">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-warning mt-3">
+                            <i class="fas fa-chart-line me-2"></i>Analyze ESG Scores
+                        </button>
+                    </form>
+                    
+                    <div id="esgResult" class="mt-3"></div>
+                    <canvas id="esgChart" class="mt-3" style="display: none;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('main.batch_processing') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-upload d-block fs-3 mb-2"></i>
+                                Batch Processing
+                                <small class="d-block text-muted">Upload CSV files</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-chart-line d-block fs-3 mb-2"></i>
+                                Analytics Dashboard
+                                <small class="d-block text-muted">View insights</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-info w-100" onclick="trainModels()">
+                                <i class="fas fa-brain d-block fs-3 mb-2"></i>
+                                Train Models
+                                <small class="d-block text-muted">Update ML models</small>
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-warning w-100" onclick="checkModelStatus()">
+                                <i class="fas fa-heartbeat d-block fs-3 mb-2"></i>
+                                Model Status
+                                <small class="d-block text-muted">Check health</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form submission handlers
+document.getElementById('packagingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        product_weight: parseFloat(document.getElementById('productWeight').value),
+        fragility: document.getElementById('fragility').value,
+        material_type: document.getElementById('materialType').value,
+        transport_mode: document.getElementById('transportMode').value
+    };
+    
+    try {
+        const response = await fetch('/api/predict/packaging', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('packagingResult').innerHTML = `
+                <div class="alert alert-success">
+                    <h6>Recommended Packaging:</h6>
+                    <p class="mb-1"><strong>${result.prediction}</strong></p>
+                    <small>Confidence: ${(result.confidence * 100).toFixed(1)}%</small>
+                </div>
+            `;
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        document.getElementById('packagingResult').innerHTML = `
+            <div class="alert alert-danger">
+                Error: ${error.message}
+            </div>
+        `;
+    }
+});
+
+document.getElementById('carbonForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        age: parseInt(document.getElementById('age').value),
+        income: parseFloat(document.getElementById('income').value),
+        location: document.getElementById('location').value,
+        transport_preference: document.getElementById('transportPreference').value
+    };
+    
+    try {
+        const response = await fetch('/api/predict/carbon-footprint', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('carbonResult').innerHTML = `
+                <div class="alert alert-success">
+                    <h6>Carbon Footprint:</h6>
+                    <p class="mb-1"><strong>${result.prediction.toFixed(2)} tons CO2/year</strong></p>
+                    <small>Global average: 4.8 tons CO2/year</small>
+                </div>
+            `;
+            
+            // Show breakdown chart
+            createCarbonChart(result.breakdown);
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        document.getElementById('carbonResult').innerHTML = `
+            <div class="alert alert-danger">
+                Error: ${error.message}
+            </div>
+        `;
+    }
+});
+
+document.getElementById('productForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        category: document.getElementById('category').value,
+        budget: parseFloat(document.getElementById('budget').value),
+        eco_priority: document.getElementById('ecoPriority').checked
+    };
+    
+    try {
+        const response = await fetch('/api/predict/product-recommendation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            let html = '<div class="alert alert-success"><h6>Recommended Products:</h6>';
+            
+            if (result.recommendations.length > 0) {
+                result.recommendations.forEach(product => {
+                    html += `
+                        <div class="border rounded p-2 mb-2">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>Product #${product.product_id}</strong>
+                                    <span class="badge bg-secondary ms-2">${product.category}</span>
+                                    ${product.eco_friendly ? '<span class="badge bg-success ms-1">Eco-Friendly</span>' : ''}
+                                </div>
+                                <div class="text-end">
+                                    <div>$${product.price.toFixed(2)}</div>
+                                    <small>Score: ${product.recommendation_score.toFixed(1)}</small>
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                Sustainability: ${product.sustainability_score.toFixed(1)}/10 | 
+                                Rating: ${product.rating.toFixed(1)}/5
+                            </small>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>No products found matching your criteria.</p>';
+            }
+            
+            html += '</div>';
+            document.getElementById('productResult').innerHTML = html;
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        document.getElementById('productResult').innerHTML = `
+            <div class="alert alert-danger">
+                Error: ${error.message}
+            </div>
+        `;
+    }
+});
+
+document.getElementById('esgForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        carbon_emissions: parseFloat(document.getElementById('carbonEmissions').value),
+        renewable_energy: parseFloat(document.getElementById('renewableEnergy').value),
+        waste_management: parseFloat(document.getElementById('wasteManagement').value),
+        employee_satisfaction: parseFloat(document.getElementById('employeeSatisfaction').value),
+        diversity_score: parseFloat(document.getElementById('diversityScore').value),
+        community_impact: parseFloat(document.getElementById('communityImpact')?.value || 6),
+        board_independence: parseFloat(document.getElementById('boardIndependence').value),
+        transparency_score: parseFloat(document.getElementById('transparencyScore')?.value || 7),
+        ethics_score: parseFloat(document.getElementById('ethicsScore')?.value || 7)
+    };
+    
+    try {
+        const response = await fetch('/api/predict/esg-score', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            const scores = result.esg_scores;
+            document.getElementById('esgResult').innerHTML = `
+                <div class="alert alert-success">
+                    <h6>ESG Analysis Results:</h6>
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <div class="h4 text-success">${scores.e_score.toFixed(1)}</div>
+                            <small>Environmental</small>
+                        </div>
+                        <div class="col-3">
+                            <div class="h4 text-info">${scores.s_score.toFixed(1)}</div>
+                            <small>Social</small>
+                        </div>
+                        <div class="col-3">
+                            <div class="h4 text-warning">${scores.g_score.toFixed(1)}</div>
+                            <small>Governance</small>
+                        </div>
+                        <div class="col-3">
+                            <div class="h4 text-primary">${scores.overall_esg.toFixed(1)}</div>
+                            <small>Overall ESG</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show ESG chart
+            createESGChart(scores);
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        document.getElementById('esgResult').innerHTML = `
+            <div class="alert alert-danger">
+                Error: ${error.message}
+            </div>
+        `;
+    }
+});
+
+// Chart creation functions
+function createCarbonChart(breakdown) {
+    const ctx = document.getElementById('carbonChart');
+    ctx.style.display = 'block';
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Transport', 'Housing', 'Food', 'Consumption', 'Other'],
+            datasets: [{
+                data: [
+                    breakdown.transport,
+                    breakdown.housing,
+                    breakdown.food,
+                    breakdown.consumption,
+                    breakdown.other
+                ],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Carbon Footprint Breakdown'
+                }
+            }
+        }
+    });
+}
+
+function createESGChart(scores) {
+    const ctx = document.getElementById('esgChart');
+    ctx.style.display = 'block';
+    
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Environmental', 'Social', 'Governance'],
+            datasets: [{
+                label: 'ESG Scores',
+                data: [scores.e_score, scores.s_score, scores.g_score],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                pointBackgroundColor: 'rgba(75, 192, 192, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 10
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'ESG Score Analysis'
+                }
+            }
+        }
+    });
+}
+
+// Utility functions
+async function trainModels() {
+    try {
+        const response = await fetch('/api/models/train', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({model_type: 'all'})
+        });
+        
+        const result = await response.json();
+        alert(result.message || 'Model training initiated');
+    } catch (error) {
+        alert('Error training models: ' + error.message);
+    }
+}
+
+async function checkModelStatus() {
+    try {
+        const response = await fetch('/api/models/status');
+        const result = await response.json();
+        
+        let statusMessage = 'Model Status:\n';
+        for (const [model, status] of Object.entries(result)) {
+            statusMessage += `${model}: ${status}\n`;
+        }
+        
+        alert(statusMessage);
+    } catch (error) {
+        alert('Error checking model status: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

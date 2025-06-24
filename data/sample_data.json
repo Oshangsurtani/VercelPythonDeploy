@@ -1,0 +1,179 @@
+{
+  "model_samples": {
+    "packaging": [
+      {
+        "product_weight": 1.5,
+        "fragility": "low",
+        "material_type": "plastic",
+        "transport_mode": "ground",
+        "expected_packaging": "recyclable_cardboard"
+      },
+      {
+        "product_weight": 10.0,
+        "fragility": "high",
+        "material_type": "glass",
+        "transport_mode": "air",
+        "expected_packaging": "reusable_container"
+      },
+      {
+        "product_weight": 0.3,
+        "fragility": "low",
+        "material_type": "organic",
+        "transport_mode": "ground",
+        "expected_packaging": "biodegradable_plastic"
+      }
+    ],
+    "carbon_footprint": [
+      {
+        "age": 25,
+        "income": 50000,
+        "location": "urban",
+        "transport_preference": "car",
+        "expected_footprint": 8.5
+      },
+      {
+        "age": 45,
+        "income": 80000,
+        "location": "suburban",
+        "transport_preference": "public_transport",
+        "expected_footprint": 6.2
+      },
+      {
+        "age": 35,
+        "income": 60000,
+        "location": "rural",
+        "transport_preference": "bike",
+        "expected_footprint": 4.1
+      }
+    ],
+    "product_recommendation": [
+      {
+        "category": "electronics",
+        "budget": 500,
+        "eco_priority": true,
+        "expected_count": 5
+      },
+      {
+        "category": "clothing",
+        "budget": 200,
+        "eco_priority": false,
+        "expected_count": 8
+      },
+      {
+        "category": "home",
+        "budget": 1000,
+        "eco_priority": true,
+        "expected_count": 6
+      }
+    ],
+    "esg_score": [
+      {
+        "carbon_emissions": 5000,
+        "renewable_energy": 30,
+        "waste_management": 5,
+        "employee_satisfaction": 7,
+        "diversity_score": 6,
+        "community_impact": 6,
+        "board_independence": 60,
+        "transparency_score": 7,
+        "ethics_score": 7,
+        "expected_overall": 6.5
+      },
+      {
+        "carbon_emissions": 3000,
+        "renewable_energy": 60,
+        "waste_management": 8,
+        "employee_satisfaction": 8,
+        "diversity_score": 9,
+        "community_impact": 7,
+        "board_independence": 70,
+        "transparency_score": 8,
+        "ethics_score": 8,
+        "expected_overall": 7.8
+      }
+    ]
+  },
+  "csv_formats": {
+    "packaging": {
+      "required_columns": ["product_weight", "fragility", "material_type", "transport_mode"],
+      "sample_csv": "product_weight,fragility,material_type,transport_mode\n1.5,low,plastic,ground\n10.0,high,glass,air\n0.5,medium,metal,sea"
+    },
+    "carbon_footprint": {
+      "required_columns": ["age", "income", "location", "transport_preference"],
+      "sample_csv": "age,income,location,transport_preference\n25,50000,urban,car\n45,80000,suburban,public_transport\n35,60000,rural,bike"
+    },
+    "product_recommendation": {
+      "required_columns": ["category", "budget"],
+      "optional_columns": ["eco_priority"],
+      "sample_csv": "category,budget,eco_priority\nelectronics,500,true\nclothing,200,false\nhome,1000,true"
+    },
+    "esg_score": {
+      "required_columns": ["carbon_emissions", "renewable_energy", "waste_management"],
+      "optional_columns": ["employee_satisfaction", "diversity_score", "community_impact", "board_independence", "transparency_score", "ethics_score"],
+      "sample_csv": "carbon_emissions,renewable_energy,waste_management,employee_satisfaction,diversity_score,board_independence\n5000,30,5,7,6,60\n3000,60,8,8,9,70\n8000,20,3,6,5,50"
+    }
+  },
+  "validation_rules": {
+    "packaging": {
+      "product_weight": {"min": 0.1, "max": 1000, "type": "float"},
+      "fragility": {"values": ["low", "medium", "high"], "type": "string"},
+      "material_type": {"values": ["plastic", "glass", "metal", "organic"], "type": "string"},
+      "transport_mode": {"values": ["ground", "air", "sea"], "type": "string"}
+    },
+    "carbon_footprint": {
+      "age": {"min": 18, "max": 100, "type": "int"},
+      "income": {"min": 0, "max": 1000000, "type": "float"},
+      "location": {"values": ["urban", "suburban", "rural"], "type": "string"},
+      "transport_preference": {"values": ["car", "public_transport", "bike", "walk"], "type": "string"}
+    },
+    "product_recommendation": {
+      "category": {"values": ["electronics", "clothing", "food", "home", "beauty"], "type": "string"},
+      "budget": {"min": 1, "max": 100000, "type": "float"},
+      "eco_priority": {"type": "boolean"}
+    },
+    "esg_score": {
+      "carbon_emissions": {"min": 0, "max": 100000, "type": "float"},
+      "renewable_energy": {"min": 0, "max": 100, "type": "float"},
+      "waste_management": {"min": 1, "max": 10, "type": "float"},
+      "employee_satisfaction": {"min": 1, "max": 10, "type": "float"},
+      "diversity_score": {"min": 1, "max": 10, "type": "float"},
+      "community_impact": {"min": 1, "max": 10, "type": "float"},
+      "board_independence": {"min": 0, "max": 100, "type": "float"},
+      "transparency_score": {"min": 1, "max": 10, "type": "float"},
+      "ethics_score": {"min": 1, "max": 10, "type": "float"}
+    }
+  },
+  "sustainability_metrics": {
+    "global_carbon_average": 4.8,
+    "packaging_sustainability_weights": {
+      "recyclable_cardboard": 0.9,
+      "biodegradable_plastic": 0.8,
+      "reusable_container": 0.95,
+      "minimal_packaging": 1.0
+    },
+    "transport_emission_factors": {
+      "ground": 0.5,
+      "air": 2.0,
+      "sea": 0.3
+    },
+    "esg_benchmarks": {
+      "excellent": 8.0,
+      "good": 6.0,
+      "average": 4.0,
+      "poor": 2.0
+    }
+  },
+  "application_metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-24",
+    "models_count": 4,
+    "supported_formats": ["CSV"],
+    "max_batch_size": 1000,
+    "supported_currencies": ["USD"],
+    "supported_units": {
+      "weight": "kg",
+      "emissions": "tons CO2/year",
+      "currency": "USD"
+    }
+  }
+}

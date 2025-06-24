@@ -1,0 +1,303 @@
+/* Sustainability Analytics Platform - Custom Styles */
+
+:root {
+  --bs-success-rgb: 40, 167, 69;
+  --bs-info-rgb: 23, 162, 184;
+  --bs-warning-rgb: 255, 193, 7;
+  --bs-danger-rgb: 220, 53, 69;
+  --bs-primary-rgb: 13, 110, 253;
+  --sustainability-green: #28a745;
+  --sustainability-dark-green: #155724;
+  --sustainability-light-green: #d4edda;
+  --carbon-blue: #17a2b8;
+  --eco-yellow: #ffc107;
+}
+
+/* Custom Background Gradients */
+.bg-gradient-success {
+  background: linear-gradient(135deg, var(--sustainability-green) 0%, var(--sustainability-dark-green) 100%);
+}
+
+.bg-gradient-info {
+  background: linear-gradient(135deg, var(--carbon-blue) 0%, #0056b3 100%);
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, var(--eco-yellow) 0%, #e0a800 100%);
+}
+
+/* Navigation Enhancements */
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.navbar-nav .nav-link {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  transform: translateY(-1px);
+}
+
+/* Card Enhancements */
+.card {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.125);
+  font-weight: 600;
+}
+
+/* Form Enhancements */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--sustainability-green);
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.btn-primary {
+  background-color: var(--sustainability-green);
+  border-color: var(--sustainability-green);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--sustainability-dark-green);
+  border-color: var(--sustainability-dark-green);
+}
+
+/* Results and Alert Styling */
+.alert {
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.alert-success {
+  background-color: var(--sustainability-light-green);
+  color: var(--sustainability-dark-green);
+}
+
+/* Chart Container Styling */
+canvas {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 0.375rem;
+  padding: 1rem;
+}
+
+/* Progress Bar Styling */
+.progress {
+  height: 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* Table Styling */
+.table-dark th {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Badge Styling */
+.badge {
+  font-weight: 500;
+}
+
+/* Loading Spinner */
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* File Upload Styling */
+.form-control[type="file"] {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  text-align: center;
+}
+
+.form-control[type="file"]:hover {
+  border-color: var(--sustainability-green);
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+/* Custom Icons */
+.fas, .far {
+  color: inherit;
+}
+
+/* Footer Styling */
+footer {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .btn {
+    margin-bottom: 0.5rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  canvas {
+    padding: 0.5rem;
+  }
+}
+
+/* Animation Classes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Sustainability Theme Colors */
+.text-sustainability {
+  color: var(--sustainability-green) !important;
+}
+
+.bg-sustainability {
+  background-color: var(--sustainability-green) !important;
+}
+
+.bg-carbon {
+  background-color: var(--carbon-blue) !important;
+}
+
+.bg-eco {
+  background-color: var(--eco-yellow) !important;
+}
+
+/* Custom Button Variants */
+.btn-sustainability {
+  background-color: var(--sustainability-green);
+  border-color: var(--sustainability-green);
+  color: white;
+}
+
+.btn-sustainability:hover,
+.btn-sustainability:focus {
+  background-color: var(--sustainability-dark-green);
+  border-color: var(--sustainability-dark-green);
+  color: white;
+}
+
+/* Dashboard Specific Styles */
+.dashboard-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Status Indicators */
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.status-trained {
+  background-color: var(--sustainability-green);
+}
+
+.status-training {
+  background-color: var(--eco-yellow);
+}
+
+.status-error {
+  background-color: var(--bs-danger);
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, var(--sustainability-green) 0%, var(--carbon-blue) 100%);
+  border-radius: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+/* Accessibility Improvements */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Focus Indicators */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+  outline: 2px solid var(--sustainability-green);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .navbar,
+  .btn,
+  footer {
+    display: none !important;
+  }
+  
+  .card {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}

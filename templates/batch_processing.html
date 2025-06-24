@@ -1,0 +1,496 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Processing - Sustainability Analytics Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-upload me-2"></i>Batch Processing</h2>
+                    <p class="text-muted mb-0">Upload CSV files for bulk predictions across all ML models</p>
+                </div>
+                <div>
+                    <button class="btn btn-outline-secondary" onclick="downloadSampleCSV()">
+                        <i class="fas fa-download me-2"></i>Download Sample CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cloud-upload-alt me-2"></i>Upload CSV File
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="batchProcessingForm" enctype="multipart/form-data">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="modelType" class="form-label">Model Type</label>
+                                <select class="form-select" id="modelType" name="model_type" required>
+                                    <option value="">Select model type</option>
+                                    <option value="packaging">Packaging Suggestions</option>
+                                    <option value="carbon_footprint">Carbon Footprint</option>
+                                    <option value="product_recommendation">Product Recommendations</option>
+                                    <option value="esg_score">ESG Score Analysis</option>
+                                </select>
+                                <div class="form-text">Choose the ML model to apply to your data</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="csvFile" class="form-label">CSV File</label>
+                                <input type="file" class="form-control" id="csvFile" name="file" accept=".csv" required>
+                                <div class="form-text">Maximum file size: 10MB</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary" id="processBtn">
+                                <i class="fas fa-cogs me-2"></i>Process File
+                            </button>
+                            <button type="button" class="btn btn-secondary ms-2" onclick="clearResults()">
+                                <i class="fas fa-trash me-2"></i>Clear Results
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Format Guidelines -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>CSV Format Requirements
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6>Packaging Model</h6>
+                            <p class="text-muted small mb-2">Required columns:</p>
+                            <ul class="small">
+                                <li><code>product_weight</code> - Weight in kg (decimal)</li>
+                                <li><code>fragility</code> - low, medium, high</li>
+                                <li><code>material_type</code> - plastic, glass, metal, organic</li>
+                                <li><code>transport_mode</code> - ground, air, sea</li>
+                            </ul>
+                            
+                            <h6 class="mt-3">Carbon Footprint Model</h6>
+                            <p class="text-muted small mb-2">Required columns:</p>
+                            <ul class="small">
+                                <li><code>age</code> - Age in years (integer)</li>
+                                <li><code>income</code> - Annual income in USD (decimal)</li>
+                                <li><code>location</code> - urban, suburban, rural</li>
+                                <li><code>transport_preference</code> - car, public_transport, bike, walk</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <h6>Product Recommendation Model</h6>
+                            <p class="text-muted small mb-2">Required columns:</p>
+                            <ul class="small">
+                                <li><code>category</code> - electronics, clothing, food, home, beauty</li>
+                                <li><code>budget</code> - Budget in USD (decimal)</li>
+                                <li><code>eco_priority</code> - true/false (optional, defaults to true)</li>
+                            </ul>
+                            
+                            <h6 class="mt-3">ESG Score Model</h6>
+                            <p class="text-muted small mb-2">Required columns:</p>
+                            <ul class="small">
+                                <li><code>carbon_emissions</code> - Emissions in tons (decimal)</li>
+                                <li><code>renewable_energy</code> - Percentage 0-100 (decimal)</li>
+                                <li><code>waste_management</code> - Score 1-10 (decimal)</li>
+                                <li>Optional: employee_satisfaction, diversity_score, board_independence</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Status -->
+    <div id="processingStatus" style="display: none;">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="spinner-border text-primary me-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span>Processing your file... Please wait.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" style="display: none;">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>Processing Results
+                        </h5>
+                        <div>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportResults()">
+                                <i class="fas fa-download me-2"></i>Export Results
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultsContent">
+                            <!-- Results will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div id="summarySection" style="display: none;">
+        <div class="row mt-4">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-analytics me-2"></i>Batch Processing Summary
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="summaryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info me-2"></i>Processing Stats
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="processingStats">
+                            <!-- Stats will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentResults = null;
+
+document.getElementById('batchProcessingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    const fileInput = document.getElementById('csvFile');
+    const modelType = document.getElementById('modelType').value;
+    
+    if (!fileInput.files[0]) {
+        alert('Please select a CSV file');
+        return;
+    }
+    
+    if (!modelType) {
+        alert('Please select a model type');
+        return;
+    }
+    
+    formData.append('file', fileInput.files[0]);
+    formData.append('model_type', modelType);
+    
+    // Show processing status
+    document.getElementById('processingStatus').style.display = 'block';
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('summarySection').style.display = 'none';
+    document.getElementById('processBtn').disabled = true;
+    
+    try {
+        const response = await fetch('/api/batch-process', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            currentResults = result;
+            displayResults(result);
+            showSummary(result);
+        } else {
+            throw new Error(result.error || 'Processing failed');
+        }
+        
+    } catch (error) {
+        alert('Error processing file: ' + error.message);
+    } finally {
+        document.getElementById('processingStatus').style.display = 'none';
+        document.getElementById('processBtn').disabled = false;
+    }
+});
+
+function displayResults(result) {
+    const resultsContent = document.getElementById('resultsContent');
+    const modelType = result.model_type;
+    const results = result.results;
+    
+    let html = `
+        <div class="mb-3">
+            <h6>Model: ${modelType.replace('_', ' ').toUpperCase()}</h6>
+            <p class="text-muted">Processed ${result.processed_count} rows</p>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Row</th>
+                        <th>Input Data</th>
+                        <th>Prediction/Result</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    results.forEach(row => {
+        const inputData = JSON.stringify(row.input_data || {});
+        let resultData = '';
+        let status = 'success';
+        
+        if (row.error) {
+            resultData = `<span class="text-danger">Error: ${row.error}</span>`;
+            status = 'error';
+        } else {
+            switch (modelType) {
+                case 'packaging':
+                    resultData = `
+                        <strong>${row.prediction}</strong><br>
+                        <small>Confidence: ${(row.confidence * 100).toFixed(1)}%</small>
+                    `;
+                    break;
+                    
+                case 'carbon_footprint':
+                    resultData = `
+                        <strong>${row.prediction.toFixed(2)} tons CO2/year</strong><br>
+                        <small>Breakdown available</small>
+                    `;
+                    break;
+                    
+                case 'product_recommendation':
+                    resultData = `
+                        <strong>${row.count} recommendations</strong><br>
+                        <small>Top products found</small>
+                    `;
+                    break;
+                    
+                case 'esg_score':
+                    const scores = row.esg_scores;
+                    resultData = `
+                        <div class="row text-center">
+                            <div class="col">E: ${scores.e_score.toFixed(1)}</div>
+                            <div class="col">S: ${scores.s_score.toFixed(1)}</div>
+                            <div class="col">G: ${scores.g_score.toFixed(1)}</div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+        
+        const statusBadge = status === 'success' 
+            ? '<span class="badge bg-success">Success</span>'
+            : '<span class="badge bg-danger">Error</span>';
+        
+        html += `
+            <tr>
+                <td>${row.row_index}</td>
+                <td><small>${inputData}</small></td>
+                <td>${resultData}</td>
+                <td>${statusBadge}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    resultsContent.innerHTML = html;
+    document.getElementById('resultsSection').style.display = 'block';
+}
+
+function showSummary(result) {
+    const successCount = result.results.filter(r => !r.error).length;
+    const errorCount = result.results.filter(r => r.error).length;
+    
+    // Update processing stats
+    document.getElementById('processingStats').innerHTML = `
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between">
+                    <span>Total Rows:</span>
+                    <strong>${result.processed_count}</strong>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="d-flex justify-content-between">
+                    <span>Successful:</span>
+                    <strong class="text-success">${successCount}</strong>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="d-flex justify-content-between">
+                    <span>Errors:</span>
+                    <strong class="text-danger">${errorCount}</strong>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="d-flex justify-content-between">
+                    <span>Success Rate:</span>
+                    <strong>${((successCount / result.processed_count) * 100).toFixed(1)}%</strong>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Create summary chart
+    const ctx = document.getElementById('summaryChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Successful', 'Errors'],
+            datasets: [{
+                data: [successCount, errorCount],
+                backgroundColor: ['#28a745', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Processing Results'
+                }
+            }
+        }
+    });
+    
+    document.getElementById('summarySection').style.display = 'block';
+}
+
+function clearResults() {
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('summarySection').style.display = 'none';
+    document.getElementById('csvFile').value = '';
+    document.getElementById('modelType').value = '';
+    currentResults = null;
+}
+
+function exportResults() {
+    if (!currentResults) {
+        alert('No results to export');
+        return;
+    }
+    
+    // Convert results to CSV
+    let csvContent = "data:text/csv;charset=utf-8,";
+    
+    // Add headers
+    csvContent += "Row,Status,Input,Prediction\n";
+    
+    // Add data
+    currentResults.results.forEach(row => {
+        const status = row.error ? 'Error' : 'Success';
+        const input = JSON.stringify(row.input_data || {}).replace(/"/g, '""');
+        const prediction = row.error ? row.error : JSON.stringify(row.prediction || row.esg_scores || row.recommendations || 'N/A').replace(/"/g, '""');
+        
+        csvContent += `${row.row_index},"${status}","${input}","${prediction}"\n`;
+    });
+    
+    // Download file
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `batch_results_${currentResults.model_type}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function downloadSampleCSV() {
+    const modelType = document.getElementById('modelType').value;
+    
+    if (!modelType) {
+        alert('Please select a model type first');
+        return;
+    }
+    
+    let csvContent = "data:text/csv;charset=utf-8,";
+    
+    switch (modelType) {
+        case 'packaging':
+            csvContent += "product_weight,fragility,material_type,transport_mode\n";
+            csvContent += "1.5,low,plastic,ground\n";
+            csvContent += "10.0,high,glass,air\n";
+            csvContent += "0.5,medium,metal,sea\n";
+            break;
+            
+        case 'carbon_footprint':
+            csvContent += "age,income,location,transport_preference\n";
+            csvContent += "25,50000,urban,car\n";
+            csvContent += "45,80000,suburban,public_transport\n";
+            csvContent += "35,60000,rural,bike\n";
+            break;
+            
+        case 'product_recommendation':
+            csvContent += "category,budget,eco_priority\n";
+            csvContent += "electronics,500,true\n";
+            csvContent += "clothing,200,false\n";
+            csvContent += "home,1000,true\n";
+            break;
+            
+        case 'esg_score':
+            csvContent += "carbon_emissions,renewable_energy,waste_management,employee_satisfaction,diversity_score,board_independence\n";
+            csvContent += "5000,30,5,7,6,60\n";
+            csvContent += "3000,60,8,8,9,70\n";
+            csvContent += "8000,20,3,6,5,50\n";
+            break;
+    }
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `sample_${modelType}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %}
