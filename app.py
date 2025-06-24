@@ -1,6 +1,7 @@
 import os
 import logging
 from flask import Flask
+from models.database import db
 
 # Configure logging for production
 logging.basicConfig(level=logging.INFO)
@@ -9,6 +10,17 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+}
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize database
+db.init_app(app)
+
 # Disable debug mode for production
 app.config['DEBUG'] = False
 
@@ -16,10 +28,12 @@ app.config['DEBUG'] = False
 try:
     from routes.main_routes import main_bp
     from routes.api_routes import api_bp
+    from routes.dashboard_routes import dashboard_bp
     
     # Register blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
 except ImportError as e:
     logging.error(f"Error importing routes: {str(e)}")
 
@@ -35,7 +49,26 @@ def internal_error(error):
 @app.route('/health')
 def health_check():
     """Health check endpoint for Vercel"""
-    return {'status': 'healthy', 'service': 'sustainability-analytics'}, 200
+    try:
+        # Test database connection
+        db.session.execute('SELECT 1')
+        db_status = 'connected'
+    except Exception as e:
+        db_status = f'error: {str(e)}'
+    
+    return {
+        'status': 'healthy', 
+        'service': 'sustainability-analytics',
+        'database': db_status
+    }, 200
+
+# Create database tables
+with app.app_context():
+    try:
+        db.create_all()
+        logging.info("Database tables created successfully")
+    except Exception as e:
+        logging.error(f"Database initialization error: {str(e)}")
 
 # Vercel serverless function handler
 def handler(environ, start_response):

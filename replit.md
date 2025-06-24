@@ -89,7 +89,8 @@ The application follows a modular Flask architecture optimized for both local de
 
 ## Changelog
 
-- June 24, 2025. Initial setup
+- June 24, 2025: Added PostgreSQL database integration with prediction tracking, batch processing analytics, and database-powered dashboard
+- June 24, 2025: Initial setup
 
 ## User Preferences
 

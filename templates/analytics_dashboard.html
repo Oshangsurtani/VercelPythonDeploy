@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - Sustainability Analytics Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-chart-bar me-2"></i>Analytics Dashboard</h2>
+                    <p class="text-muted mb-0">Database-powered insights and analytics</p>
+                </div>
+                <div>
+                    <button class="btn btn-outline-primary" onclick="refreshAnalytics()">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh Data
+                    </button>
+                    <button class="btn btn-outline-success ms-2" onclick="exportData()">
+                        <i class="fas fa-download me-2"></i>Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Predictions</h6>
+                            <h4 id="totalPredictions">{{ recent_predictions|length }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-brain fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Batch Jobs</h6>
+                            <h4 id="totalBatches">{{ batch_stats.total_batches or 0 }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-upload fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Active Sessions</h6>
+                            <h4 id="activeSessions">0</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Avg Processing Time</h6>
+                            <h4 id="avgProcessingTime">{{ "%.3f"|format(batch_stats.avg_time or 0) }}s</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Model Usage Chart -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Model Usage Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="modelUsageChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Predictions Chart -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Daily Predictions (Last 7 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyPredictionsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Performance -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tachometer-alt me-2"></i>Processing Time by Model
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="processingTimeChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-trophy me-2"></i>Model Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="modelPerformanceList">
+                        <!-- Performance metrics will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Predictions Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Predictions
+                    </h5>
+                    <div>
+                        <select class="form-select form-select-sm" id="modelFilter" onchange="filterPredictions()">
+                            <option value="">All Models</option>
+                            <option value="packaging">Packaging</option>
+                            <option value="carbon_footprint">Carbon Footprint</option>
+                            <option value="product_recommendation">Product Recommendations</option>
+                            <option value="esg_score">ESG Analysis</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Model</th>
+                                    <th>Input Data</th>
+                                    <th>Result</th>
+                                    <th>Confidence</th>
+                                    <th>Processing Time</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="predictionsTableBody">
+                                {% for prediction in recent_predictions %}
+                                <tr>
+                                    <td>#{{ prediction.id }}</td>
+                                    <td><span class="badge bg-primary">{{ prediction.model_type|title }}</span></td>
+                                    <td><small class="text-muted">{{ prediction.input_data|truncate(50) }}</small></td>
+                                    <td><small>{{ prediction.prediction_result|truncate(100) }}</small></td>
+                                    <td>
+                                        {% if prediction.confidence_score %}
+                                            <span class="badge bg-success">{{ "%.1f"|format(prediction.confidence_score * 100) }}%</span>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "%.3f"|format(prediction.processing_time or 0) }}s</td>
+                                    <td><small>{{ prediction.created_at.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No predictions found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Predictions pagination">
+                        <ul class="pagination justify-content-center" id="predictionsPagination">
+                            <!-- Pagination will be loaded here -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentPage = 1;
+let currentFilter = '';
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardStats();
+    loadCharts();
+});
+
+async function loadDashboardStats() {
+    try {
+        const response = await fetch('/dashboard/api/stats');
+        const stats = await response.json();
+        
+        // Update statistics cards
+        document.getElementById('totalPredictions').textContent = stats.total_predictions || 0;
+        document.getElementById('totalBatches').textContent = stats.total_batch_jobs || 0;
+        document.getElementById('activeSessions').textContent = stats.active_sessions || 0;
+        
+        // Update charts with real data
+        updateModelUsageChart(stats.predictions_by_model);
+        updateDailyPredictionsChart(stats.daily_predictions);
+        updateProcessingTimeChart(stats.processing_times);
+        updateModelPerformance(stats.model_performance);
+        
+    } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+    }
+}
+
+function updateModelUsageChart(data) {
+    const ctx = document.getElementById('modelUsageChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.map(d => d.model.replace('_', ' ').toUpperCase()),
+            datasets: [{
+                data: data.map(d => d.count),
+                backgroundColor: ['#007bff', '#28a745', '#17a2b8', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function updateDailyPredictionsChart(data) {
+    const ctx = document.getElementById('dailyPredictionsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(d => d.date),
+            datasets: [{
+                label: 'Predictions',
+                data: data.map(d => d.count),
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function updateProcessingTimeChart(data) {
+    const ctx = document.getElementById('processingTimeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.model.replace('_', ' ').toUpperCase()),
+            datasets: [{
+                label: 'Avg Processing Time (seconds)',
+                data: data.map(d => d.avg_time),
+                backgroundColor: ['#007bff', '#28a745', '#17a2b8', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function updateModelPerformance(data) {
+    const container = document.getElementById('modelPerformanceList');
+    container.innerHTML = '';
+    
+    data.forEach(model => {
+        const item = document.createElement('div');
+        item.className = 'mb-3 p-3 border rounded';
+        item.innerHTML = `
+            <h6 class="mb-2">${model.model_type.replace('_', ' ').toUpperCase()}</h6>
+            <div class="small text-muted">
+                <div>Status: <span class="badge bg-${model.status === 'trained' ? 'success' : 'warning'}">${model.status}</span></div>
+                <div>Version: ${model.version}</div>
+                <div>Last Trained: ${new Date(model.last_trained).toLocaleDateString()}</div>
+                ${model.accuracy_score ? `<div>Accuracy: ${(model.accuracy_score * 100).toFixed(1)}%</div>` : ''}
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+async function loadCharts() {
+    // Additional chart loading logic can go here
+}
+
+async function refreshAnalytics() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Refreshing...';
+    button.disabled = true;
+    
+    try {
+        await loadDashboardStats();
+        showNotification('Dashboard refreshed successfully!', 'success');
+    } catch (error) {
+        showNotification('Error refreshing dashboard', 'danger');
+    } finally {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+async function exportData() {
+    try {
+        const response = await fetch('/dashboard/api/export/predictions?days=30');
+        const data = await response.json();
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sustainability_analytics_export_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showNotification('Data exported successfully!', 'success');
+    } catch (error) {
+        showNotification('Error exporting data', 'danger');
+    }
+}
+
+function filterPredictions() {
+    const filter = document.getElementById('modelFilter').value;
+    currentFilter = filter;
+    currentPage = 1;
+    loadPredictions();
+}
+
+async function loadPredictions(page = 1) {
+    try {
+        let url = `/dashboard/api/predictions/recent?page=${page}`;
+        if (currentFilter) {
+            url += `&model_type=${currentFilter}`;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        updatePredictionsTable(data.predictions);
+        updatePagination(data);
+        
+    } catch (error) {
+        console.error('Error loading predictions:', error);
+    }
+}
+
+function updatePredictionsTable(predictions) {
+    const tbody = document.getElementById('predictionsTableBody');
+    tbody.innerHTML = '';
+    
+    predictions.forEach(prediction => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>#${prediction.id}</td>
+            <td><span class="badge bg-primary">${prediction.model_type.replace('_', ' ').toUpperCase()}</span></td>
+            <td><small class="text-muted">${JSON.stringify(prediction.input_data).substring(0, 50)}...</small></td>
+            <td><small>${JSON.stringify(prediction.prediction_result).substring(0, 100)}...</small></td>
+            <td>${prediction.confidence_score ? `<span class="badge bg-success">${(prediction.confidence_score * 100).toFixed(1)}%</span>` : '<span class="text-muted">N/A</span>'}</td>
+            <td>${prediction.processing_time ? prediction.processing_time.toFixed(3) : '0.000'}s</td>
+            <td><small>${new Date(prediction.created_at).toLocaleString()}</small></td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    if (predictions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No predictions found</td></tr>';
+    }
+}
+
+function updatePagination(data) {
+    const pagination = document.getElementById('predictionsPagination');
+    pagination.innerHTML = '';
+    
+    if (data.pages <= 1) return;
+    
+    // Previous button
+    if (data.has_prev) {
+        pagination.innerHTML += `<li class="page-item"><a class="page-link" href="#" onclick="loadPredictions(${data.page - 1})">Previous</a></li>`;
+    }
+    
+    // Page numbers
+    for (let i = Math.max(1, data.page - 2); i <= Math.min(data.pages, data.page + 2); i++) {
+        const activeClass = i === data.page ? 'active' : '';
+        pagination.innerHTML += `<li class="page-item ${activeClass}"><a class="page-link" href="#" onclick="loadPredictions(${i})">${i}</a></li>`;
+    }
+    
+    // Next button
+    if (data.has_next) {
+        pagination.innerHTML += `<li class="page-item"><a class="page-link" href="#" onclick="loadPredictions(${data.page + 1})">Next</a></li>`;
+    }
+}
+
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

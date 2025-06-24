@@ -1,9 +1,12 @@
 from flask import Blueprint, request, jsonify
 from models.ml_models import MLModelManager
+from models.database import db, Prediction, BatchProcessing, ModelPerformance, UserSession
 from utils.data_processor import DataProcessor
 import pandas as pd
 import io
 import logging
+import time
+from datetime import datetime
 
 api_bp = Blueprint('api', __name__)
 ml_manager = MLModelManager()
@@ -12,6 +15,8 @@ data_processor = DataProcessor()
 @api_bp.route('/predict/packaging', methods=['POST'])
 def predict_packaging():
     """API endpoint for packaging predictions"""
+    start_time = time.time()
+    
     try:
         data = request.get_json()
         if not data:
@@ -19,10 +24,28 @@ def predict_packaging():
         
         prediction = ml_manager.predict_packaging(data)
         confidence = ml_manager.get_prediction_confidence('packaging', data)
+        processing_time = time.time() - start_time
+        
+        # Store prediction in database
+        try:
+            prediction_record = Prediction(
+                model_type='packaging',
+                input_data=data,
+                prediction_result={'prediction': prediction},
+                confidence_score=confidence,
+                processing_time=processing_time,
+                ip_address=request.remote_addr
+            )
+            db.session.add(prediction_record)
+            db.session.commit()
+        except Exception as db_error:
+            logging.error(f"Database error storing packaging prediction: {str(db_error)}")
+            # Continue without failing the prediction
         
         return jsonify({
             'prediction': prediction,
             'confidence': confidence,
+            'processing_time': round(processing_time, 3),
             'model_status': 'active'
         })
         
@@ -33,6 +56,8 @@ def predict_packaging():
 @api_bp.route('/predict/carbon-footprint', methods=['POST'])
 def predict_carbon_footprint():
     """API endpoint for carbon footprint predictions"""
+    start_time = time.time()
+    
     try:
         data = request.get_json()
         if not data:
@@ -40,10 +65,26 @@ def predict_carbon_footprint():
         
         prediction = ml_manager.predict_carbon_footprint(data)
         breakdown = ml_manager.get_carbon_breakdown(data)
+        processing_time = time.time() - start_time
+        
+        # Store prediction in database
+        try:
+            prediction_record = Prediction(
+                model_type='carbon_footprint',
+                input_data=data,
+                prediction_result={'prediction': prediction, 'breakdown': breakdown},
+                processing_time=processing_time,
+                ip_address=request.remote_addr
+            )
+            db.session.add(prediction_record)
+            db.session.commit()
+        except Exception as db_error:
+            logging.error(f"Database error storing carbon footprint prediction: {str(db_error)}")
         
         return jsonify({
             'prediction': prediction,
             'breakdown': breakdown,
+            'processing_time': round(processing_time, 3),
             'unit': 'tons CO2/year',
             'model_status': 'active'
         })
@@ -93,6 +134,8 @@ def predict_esg_score():
 @api_bp.route('/batch-process', methods=['POST'])
 def batch_process():
     """API endpoint for batch processing CSV files"""
+    start_time = time.time()
+    
     try:
         if 'file' not in request.files:
             return jsonify({'error': 'No file uploaded'}), 400
@@ -111,10 +154,39 @@ def batch_process():
         # Process batch data
         model_type = request.form.get('model_type', 'packaging')
         results = data_processor.process_batch(df, model_type)
+        processing_time = time.time() - start_time
+        
+        # Calculate statistics
+        successful_rows = len([r for r in results if 'error' not in r])
+        failed_rows = len([r for r in results if 'error' in r])
+        
+        # Store batch processing record
+        try:
+            batch_record = BatchProcessing(
+                filename=file.filename,
+                model_type=model_type,
+                total_rows=len(results),
+                successful_rows=successful_rows,
+                failed_rows=failed_rows,
+                processing_time=processing_time,
+                results_summary={
+                    'success_rate': round((successful_rows / len(results)) * 100, 2) if results else 0,
+                    'avg_processing_time_per_row': round(processing_time / len(results), 4) if results else 0
+                },
+                ip_address=request.remote_addr
+            )
+            db.session.add(batch_record)
+            db.session.commit()
+        except Exception as db_error:
+            logging.error(f"Database error storing batch processing: {str(db_error)}")
         
         return jsonify({
             'results': results,
             'processed_count': len(results),
+            'successful_count': successful_rows,
+            'failed_count': failed_rows,
+            'success_rate': round((successful_rows / len(results)) * 100, 2) if results else 0,
+            'processing_time': round(processing_time, 3),
             'model_type': model_type
         })
         
